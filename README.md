@@ -4,9 +4,12 @@ Indexes your harddrive and then you can search stuff instantly, it will cache th
 
 Simple PyQt5 interface.
 
-To install and compile to .exe:
+To install and compile to .exe
+
 have python installed
+
 run fastsearch_auto_install.py
+
 exe is in 'Dist' folder
 
 https://i.imgur.com/DpvNuWj.png
