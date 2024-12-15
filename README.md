@@ -6,3 +6,4 @@ Simple PyQt5 interface.
 
 
 https://i.imgur.com/DpvNuWj.png
+![DpvNuWj](https://github.com/user-attachments/assets/a4bc2197-96bc-468d-a08e-3fe0989458c0)
