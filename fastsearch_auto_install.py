@@ -1,46 +1,38 @@
 import os
 import subprocess
-import sys
 import urllib.request
+import sys
 
-APP_DIR = "FastSearchApp"
-VENV_DIR = os.path.join(APP_DIR, "venv")
-FASTSEARCH_URL = "https://raw.githubusercontent.com/thongraegu/fastsearch/main/fastsearch.py"
-FASTSEARCH_PY = os.path.join(APP_DIR, "fastsearch.py")
+# Define the script location
+script_location = os.path.dirname(os.path.abspath(__file__))
 
-def run_command(cmd, shell=True):
-    print(f"Running: {cmd}")
-    result = subprocess.run(cmd, shell=shell)
-    if result.returncode != 0:
-        sys.exit(f"Command failed with exit code {result.returncode}")
+# Create the "fastsearch" folder
+fastsearch_folder = os.path.join(script_location, "fastsearch")
+os.makedirs(fastsearch_folder, exist_ok=True)
 
-def main():
-    # 1. Create folder if not exists
-    if not os.path.exists(APP_DIR):
-        os.mkdir(APP_DIR)
+# Set up the virtual environment
+venv_folder = os.path.join(fastsearch_folder, "venv")
+subprocess.run([sys.executable, "-m", "venv", venv_folder], check=True)
 
-    # 2. Create a virtual environment
-    if not os.path.exists(VENV_DIR):
-        run_command(f"python -m venv {VENV_DIR}")
+# Function to run commands in the virtual environment
+def run_in_venv(command):
+    if os.name == "nt":
+        activate_script = os.path.join(venv_folder, "Scripts", "activate.bat")
+        command = f'cmd /c "{activate_script} && {command}"'
+    else:
+        activate_script = os.path.join(venv_folder, "bin", "activate")
+        command = f'bash -c "source {activate_script} && {command}"'
+    subprocess.run(command, shell=True, check=True)
 
-    # Determine python binary inside the venv
-    python_bin = os.path.join(VENV_DIR, "Scripts", "python.exe") if os.name == 'nt' else os.path.join(VENV_DIR, "bin", "python")
+# Download the fastsearch.py file
+fastsearch_url = "https://raw.githubusercontent.com/thongraegu/fastsearch/main/fastsearch.py"
+fastsearch_file = os.path.join(fastsearch_folder, "fastsearch.py")
+urllib.request.urlretrieve(fastsearch_url, fastsearch_file)
 
-    # 3. Download fastsearch.py from GitHub
-    print("Downloading fastsearch.py...")
-    urllib.request.urlretrieve(FASTSEARCH_URL, FASTSEARCH_PY)
+# Install the required libraries
+run_in_venv(f"{os.path.join(venv_folder, 'Scripts', 'pip')} install PyQt5 pyinstaller")
 
-    # 4. Upgrade pip and install dependencies
-    run_command(f"{python_bin} -m pip install --upgrade pip")
-    run_command(f"{python_bin} -m pip install PyQt5 pyinstaller")
+# Create the .exe file using PyInstaller with the --windowed flag
+run_in_venv(f"{os.path.join(venv_folder, 'Scripts', 'pyinstaller')} --name FastSearch --onefile --windowed {fastsearch_file}")
 
-    # Change working directory to APP_DIR so pyinstaller runs inside it
-    os.chdir(APP_DIR)
-
-    # 5. Run pyinstaller to build the executable
-    run_command(f"{python_bin} -m PyInstaller --name FastSearch --onefile --windowed fastsearch.py")
-
-    print("Build complete. Check the 'dist' folder inside 'FastSearchApp' for the FastSearch executable.")
-
-if __name__ == "__main__":
-    main()
+print("Script execution completed successfully.")
